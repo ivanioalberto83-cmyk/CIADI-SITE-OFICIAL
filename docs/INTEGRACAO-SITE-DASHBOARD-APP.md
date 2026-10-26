@@ -10,6 +10,7 @@ Os três clientes devem trabalhar sobre o mesmo projeto Supabase, com autentica�
 - **Dashboard Windows:** repositório `ivanioalberto83-cmyk/CIADI-`, ficheiro `CIADI_DASHBOARD_FINANCEIRO.html`; usa o mesmo URL de Supabase e a mesma chave publicável.
 - **CIADI+ Android:** repositório `ivanioalberto83-cmyk/ciadi-plus-android`; `SupabaseConfig.kt` aponta para o mesmo projeto e o repositório usa Auth, PostgREST e um gestor Realtime.
 - **Entrada do site:** `index.html` encaminha para o site institucional completo em `INDEX.HTML.CIADI.html`.
+- **Triagem pública:** o formulário usa a RPC existente `ciadi_registrar_triagem_publica`, que valida os campos e regista em `ciadi_triagens`; não deve inserir diretamente na tabela interna de triagens.
 
 Esta verificação confirma configuração comum, não confirma que todos os fluxos funcionem ponta a ponta em produção.
 
@@ -18,7 +19,8 @@ Esta verificação confirma configuração comum, não confirma que todos os flu
 | Fluxo | Origem | Destino esperado | Validação necessária |
 |---|---|---|---|
 | Login | Site / Android / Dashboard | Supabase Auth | Utilizador ativo e perfil/role válidos |
-| Agendamento | Portal ou Dashboard | `agendamentos` | Mesmo registo visível aos perfis autorizados |
+| Pedido de triagem pública | Formulário do site | RPC `ciadi_registrar_triagem_publica` → `ciadi_triagens` | Código de referência devolvido e pedido visível à gestão via RLS |
+| Agendamento clínico | Portal ou Dashboard | `agendamentos` | Mesmo registo visível aos perfis autorizados |
 | Assistido/paciente | Dashboard | Site/Android | Associação correta e política RLS aplicada |
 | Formulários clínicos e A.T. | Dashboard / Android | Tabelas clínicas CIADI | Guardar, reabrir, permissões e histórico |
 | SOS | CIADI+ Android | RPC de criação SOS e fluxo de despacho | Criar protocolo, receber no Dashboard, reconhecer e auditar |
@@ -39,6 +41,7 @@ Esta verificação confirma configuração comum, não confirma que todos os flu
 
 - [ ] Confirmar que os três clientes usam o projeto esperado e que nenhum segredo privilegiado está no código distribuído.
 - [ ] Entrar com uma conta de teste de cada perfil e confirmar logout/expiração de sessão.
+- [ ] Submeter um pedido de triagem fictício pelo site e confirmar o código de referência e a leitura no Dashboard por um perfil de gestão.
 - [ ] Criar um agendamento fictício e verificar a leitura apenas pelos perfis autorizados.
 - [ ] Criar e consultar um formulário clínico fictício; verificar permissões, estado, histórico e anexos privados.
 - [ ] Enviar SOS de teste no Android; verificar receção no Dashboard, protocolo, reconhecimento e trilho de auditoria.
