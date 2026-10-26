@@ -1638,22 +1638,29 @@ async function submitABATriage(event){
       consentimento:true
     };
 
-    const result=await supabaseClient.from('agendamentos_aba').insert(payload).select('id,status').single();
+    const result=await supabaseClient.rpc('ciadi_registrar_triagem_publica',{
+      p_paciente_nome:payload.paciente_nome,
+      p_data_nascimento:payload.data_nascimento,
+      p_responsavel_nome:payload.responsavel_nome,
+      p_telefone:payload.telefone,
+      p_email:payload.email,
+      p_diagnostico:payload.diagnostico,
+      p_comportamentos:behaviors,
+      p_reforcadores:payload.reforcadores,
+      p_modalidade:payload.modalidade==='Presencial'?'presencial':'online',
+      p_periodo:payload.periodo,
+      p_consentimento:true
+    });
     if(result.error)throw result.error;
+    if(!result.data?.sucesso||!result.data?.triagem_id)throw new Error('O serviço não confirmou o registo da triagem.');
 
     const text=buildABAText(data,behaviors);
     const wa='https://wa.me/244949090999?text='+encodeURIComponent(text);
     document.getElementById('abaWhatsAppButton').href=wa;
     document.getElementById('abaSuccessActions').classList.remove('hidden');
     form.classList.add('hidden');
-    showABAFormMessage('Pedido registado com sucesso.','success');
+    showABAFormMessage('Pedido registado com sucesso. Código de referência: '+result.data.codigo,'success');
 
-    // A função server-side é opcional: se existir, envia a notificação por email sem expor credenciais.
-    try{
-      await supabaseClient.functions.invoke('ciadi-aba-notify',{body:{agendamento_id:result.data.id}});
-    }catch(notificationError){
-      console.warn('CIADI: notificação por email não disponível:',notificationError);
-    }
   }catch(error){
     console.error('CIADI ABA:',error);
     showABAFormMessage(error?.message||'Não foi possível registar o pedido. Verifique a configuração do Supabase/RLS.');
