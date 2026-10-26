@@ -1,28 +1,31 @@
 # CIADI — Site Oficial
 
-Site institucional estático do Centro Integrado de Apoio e Desenvolvimento Individual (CIADI), em português de Angola.
+Site institucional do Centro Integrado de Apoio e Desenvolvimento Individual (CIADI), em português de Angola.
 
-## Estado atual
+## Ficheiros principais
 
-- Página inicial responsiva em `index.html`.
-- Secções institucionais, áreas de apoio, famílias, participação comunitária e contactos.
-- Separadores acessíveis por teclado.
-- Formulário de contacto que prepara uma mensagem no programa de email do visitante; não envia nem guarda dados num servidor.
-- Sem dependência de framework ou de serviços pagos.
+- `INDEX.HTML.CIADI.html` — site institucional completo, com módulos do portal e configuração do Supabase.
+- `index.html` — ponto de entrada que encaminha para o site institucional completo.
+- `docs/INTEGRACAO-SITE-DASHBOARD-APP.md` — arquitetura partilhada, fluxos de integração e plano de homologação.
+
+## Integração
+
+O site, o Dashboard Windows e o CIADI+ Android estão configurados para o mesmo projeto Supabase. Isto estabelece uma base comum, mas não prova que cada fluxo esteja validado ponta a ponta. Consultar o documento de integração e executar os testes com contas e dados fictícios.
 
 ## Publicação
 
-O conteúdo está versionado na branch `main`. Para servir o site com GitHub Pages, abra **Settings → Pages** no repositório e configure **Deploy from a branch → main → /(root)**. Depois de guardar, aguarde a publicação e confirme o URL apresentado pelo GitHub Pages.
+O repositório está na branch `main`. Para publicar através do GitHub Pages, abrir **Settings → Pages** e configurar **Deploy from a branch → main → /(root)**. Depois, confirmar o URL de publicação e testar a página no navegador.
 
-A publicação neste repositório não altera automaticamente o alojamento DNS ou o site de produção em `www.ciadi.ao`. A ligação do domínio, HTTPS e DNS deve ser verificada separadamente antes de anunciar a nova versão como publicada.
+A publicação neste repositório não altera automaticamente o alojamento DNS nem o site de produção em `www.ciadi.ao`. Verificar domínio, DNS e HTTPS separadamente.
 
 ## Antes de produção
 
-- Validar o conteúdo institucional, contactos, serviços disponíveis e identidade visual com a direção do CIADI.
-- Substituir o monograma provisório por um ficheiro oficial do logótipo.
-- Adicionar apenas fotografias autorizadas e com proteção da identidade das crianças.
-- Se for necessário recolher formulários no servidor, implementar backend seguro, aviso de privacidade e medidas de proteção de dados antes de ativar essa recolha.
-- Testar navegação móvel, contraste, teclado, leitor de ecrã e links de contacto.
+- Validar textos, serviços, contactos e identidade visual com a direção do CIADI.
+- Confirmar que o logótipo e as imagens são oficiais e que existe autorização para publicar fotografias identificáveis de crianças.
+- Confirmar RLS e permissões no Supabase para todos os dados pessoais, clínicos, financeiros e SOS.
+- Não incluir chaves privilegiadas, palavras-passe ou tokens no browser, APK ou repositório.
+- Testar em dispositivos móveis, teclado, leitor de ecrã e navegadores suportados.
+- Não anunciar conformidade APD/AGT nem integração completa antes de auditoria e testes documentados.
 
 ## Contacto institucional
 
