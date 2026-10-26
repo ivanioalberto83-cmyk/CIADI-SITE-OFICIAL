@@ -1,0 +1,76 @@
+name: Validate CIADI site integration
+
+on:
+  pull_request:
+    paths:
+      - 'INDEX.HTML.CIADI.html'
+      - 'index.html'
+      - '.github/workflows/validate-site-integration.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'INDEX.HTML.CIADI.html'
+      - 'index.html'
+      - '.github/workflows/validate-site-integration.yml'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Check inline JavaScript syntax
+        run: |
+          python - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+
+          class ScriptExtractor(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.in_script = False
+                  self.external = False
+                  self.parts = []
+
+              def handle_starttag(self, tag, attrs):
+                  if tag.lower() == "script":
+                      self.in_script = True
+                      self.external = any(k.lower() == "src" for k, _ in attrs)
+
+              def handle_endtag(self, tag):
+                  if tag.lower() == "script":
+                      self.in_script = False
+                      self.external = False
+                      self.parts.append("\n;\n")
+
+              def handle_data(self, data):
+                  if self.in_script and not self.external:
+                      self.parts.append(data)
+
+          parser = ScriptExtractor()
+          parser.feed(Path("INDEX.HTML.CIADI.html").read_text(encoding="utf-8"))
+          Path("/tmp/ciadi-site-inline.js").write_text("".join(parser.parts), encoding="utf-8")
+          PY
+          node --check /tmp/ciadi-site-inline.js
+      - name: Verify safe triage integration
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          site = Path("INDEX.HTML.CIADI.html").read_text(encoding="utf-8")
+          entry = Path("index.html").read_text(encoding="utf-8")
+          checks = {
+              "public triage uses validated RPC": "rpc('ciadi_registrar_triagem_publica'" in site,
+              "public form no longer inserts directly into intake table": "from('agendamentos_aba').insert(payload)" not in site,
+              "triage result checks server confirmation": "result.data?.triagem_id" in site,
+              "entry points to full institutional site": "INDEX.HTML.CIADI.html" in entry,
+              "shared Supabase project configured": "https://egpkkttbcaukqnnxyhjv.supabase.co" in site,
+              "no service-role credential in browser": "SUPABASE_SERVICE_ROLE_KEY" not in site and "service_role" not in site.lower(),
+          }
+          for label, ok in checks.items():
+              print(("PASS" if ok else "FAIL") + ": " + label)
+          if not all(checks.values()):
+              raise SystemExit(1)
+          PY
